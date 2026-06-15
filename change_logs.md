@@ -6,3 +6,4 @@
 
 - Init react app 
 - Creating basic three.js scene
+- Adding spin on click
