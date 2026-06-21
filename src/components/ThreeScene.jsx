@@ -40,31 +40,15 @@ function makeTextSprite(text, color, scaleY = 0.3) {
   return sprite;
 }
 
-function getCheckerboardTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext("2d");
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 8; j++) {
-      ctx.fillStyle = (i + j) % 2 === 0 ? "#ffffff" : "#444444";
-      ctx.fillRect(i * 32, j * 32, 32, 32);
-    }
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.magFilter = THREE.NearestFilter;
-  return tex;
-}
-
 const STEPS = [
   {
     title: {
       en: "1. The Point",
-      de: "1. Der Punkt",
+      de: "1. Der Punkt(Vertex)",
     },
     desc: {
-      en: "A point is the absolute most basic element in 3D graphics. It represents a single location in infinite space, defined purely by its X, Y, and Z coordinates.",
-      de: "Ein Punkt ist das absolut grundlegendste Element in der 3D-Grafik. Er repräsentiert einen einzelnen Ort im unendlichen Raum, der rein durch seine X-, Y- und Z-Koordinaten definiert ist.",
+      en: "A point is the absolute most basic element in graphics. It represents a single exact location in space, defined purely by its X, Y, and Z coordinates.",
+      de: "Ein Punkt ist das absolut grundlegendste Element in der Computergrafik. Er repräsentiert einen exakten Ort im Raum, der rein durch seine X-, Y- und Z-Koordinaten definiert ist.",
     },
     createContent(g) {
       const dot1 = new THREE.Mesh(
@@ -135,12 +119,12 @@ const STEPS = [
   },
   {
     title: {
-      en: "2. Vertex & Edge",
-      de: "2. Scheitelpunkt & Kante",
+      en: "2. The Edge",
+      de: "2. Die Kante(Edge)",
     },
     desc: {
-      en: "When two points are connected, they form an Edge. The points themselves are now called Vertices. This straight line segment is the simplest form of geometry.",
-      de: "Wenn zwei Punkte verbunden werden, bilden sie eine Kante. Die Punkte selbst werden nun Vertices (Scheitelpunkte) genannt. Dieses gerade Liniensegment ist die einfachste Form der Geometrie.",
+      en: "When two points are connected, they form an Edge. This straight line segment is the simplest shape the computer can draw.",
+      de: "Wenn zwei Punkte verbunden werden, bilden sie eine Kante. Dieses gerade Liniensegment ist die einfachste Form, die der Computer zeichnen kann.",
     },
     createContent(g) {
       const p1 = new THREE.Vector3(-0.8, 0.5, 0);
@@ -157,9 +141,6 @@ const STEPS = [
         );
         dot.position.copy(p);
         g.add(dot);
-        const lbl = makeTextSprite("V" + (i + 1), 0x44aaff, 0.2);
-        lbl.position.copy(p).add(new THREE.Vector3(0, 0.3, 0));
-        g.add(lbl);
       });
 
       const edge = new THREE.Line(
@@ -183,20 +164,20 @@ const STEPS = [
   {
     title: {
       en: "3. The Face (Triangle)",
-      de: "3. Die Fläche (Dreieck)",
+      de: "3. Das Dreieck (Face)",
     },
     desc: {
-      en: "Three vertices connected by edges form a Triangle - the undisputed king of 3D graphics. Every complex surface is just thousands of these tiny flat triangles stitched together.",
-      de: "Drei durch Kanten verbundene Vertices bilden ein Dreieck – den unangefochtenen König der 3D-Grafiken. Jede komplexe Oberfläche besteht aus Tausenden dieser winzigen flachen Dreiecke.",
+      en: "Three connected points form a Triangle. The computer loves triangles because they are always perfectly flat, unlike a Quad (rectangle) which bends and breaks when a point moves.",
+      de: "Drei verbundene Punkte bilden ein Dreieck. Der Computer liebt Dreiecke, weil sie immer perfekt flach sind. Ein Viereck (Rechts) hingegen knickt in sich zusammen, sobald sich ein Punkt verschiebt.",
     },
     createContent(g) {
-      const pts = [
-        new THREE.Vector3(-0.8, -0.5, 0),
-        new THREE.Vector3(0.8, -0.5, 0),
-        new THREE.Vector3(0, 0.8, 0),
+      const tPts = [
+        new THREE.Vector3(-1.2, -0.5, 0),
+        new THREE.Vector3(-0.2, -0.5, 0),
+        new THREE.Vector3(-0.7, 0.8, 0),
       ];
 
-      pts.forEach((p) => {
+      tPts.forEach((p) => {
         const dot = new THREE.Mesh(
           new THREE.SphereGeometry(0.05, 10, 10),
           new THREE.MeshStandardMaterial({
@@ -208,16 +189,16 @@ const STEPS = [
         g.add(dot);
       });
 
-      const edgeLine = new THREE.LineLoop(
-        new THREE.BufferGeometry().setFromPoints(pts),
+      const tLine = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(tPts),
         new THREE.LineBasicMaterial({ color: 0xffaa44 }),
       );
-      g.add(edgeLine);
+      g.add(tLine);
 
-      const faceGeo = new THREE.BufferGeometry().setFromPoints(pts);
-      faceGeo.computeVertexNormals();
-      const faceMesh = new THREE.Mesh(
-        faceGeo,
+      const tFaceGeo = new THREE.BufferGeometry().setFromPoints(tPts);
+      tFaceGeo.computeVertexNormals();
+      const tFaceMesh = new THREE.Mesh(
+        tFaceGeo,
         new THREE.MeshBasicMaterial({
           color: 0xffaa44,
           transparent: true,
@@ -225,29 +206,165 @@ const STEPS = [
           side: THREE.DoubleSide,
         }),
       );
-      g.add(faceMesh);
+      g.add(tFaceMesh);
 
-      const center = new THREE.Vector3(0, -0.06, 0);
-      const arrow = new THREE.ArrowHelper(
-        new THREE.Vector3(0, 0, 1),
-        center,
-        0.6,
-        0xffff00,
+      const qPts = [
+        new THREE.Vector3(0.2, 0.8, 0),
+        new THREE.Vector3(1.2, 0.8, 0),
+        new THREE.Vector3(1.2, -0.5, 0),
+        new THREE.Vector3(0.2, -0.5, 0),
+      ];
+
+      const qDots = [];
+      qPts.forEach((p) => {
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(0.05, 10, 10),
+          new THREE.MeshStandardMaterial({
+            color: 0xff4444,
+            emissive: 0xff4444,
+          }),
+        );
+        dot.position.copy(p);
+        g.add(dot);
+        qDots.push(dot);
+      });
+
+      const qLineGeo = new THREE.BufferGeometry().setFromPoints([
+        ...qPts,
+        qPts[0],
+      ]);
+      const qLine = new THREE.Line(
+        qLineGeo,
+        new THREE.LineBasicMaterial({ color: 0xff4444 }),
       );
-      g.add(arrow);
-      const nLbl = makeTextSprite("Normal", 0xffff00, 0.15);
-      nLbl.position.set(0, 0.2, 0.6);
-      g.add(nLbl);
+      g.add(qLine);
+
+      // const qDiagGeo = new THREE.BufferGeometry().setFromPoints([
+      //   qPts[0],
+      //   qPts[2],
+      // ]);
+      // const qDiag = new THREE.Line(
+      //   qDiagGeo,
+      //   new THREE.LineBasicMaterial({
+      //     color: 0xff4444,
+      //     transparent: true,
+      //     opacity: 0.3,
+      //   }),
+      // );
+      // g.add(qDiag);
+
+      const qFaceGeo = new THREE.BufferGeometry().setFromPoints(qPts);
+      qFaceGeo.setIndex([0, 3, 2, 0, 2, 1]);
+      qFaceGeo.computeVertexNormals();
+      const qFaceMesh = new THREE.Mesh(
+        qFaceGeo,
+        new THREE.MeshBasicMaterial({
+          color: 0xff4444,
+          transparent: true,
+          opacity: 0.4,
+          side: THREE.DoubleSide,
+        }),
+      );
+      g.add(qFaceMesh);
+
+      g.userData.update = (time) => {
+        const zDisplace = Math.sin(time * 3) * 0.6;
+
+        qDots[1].position.z = zDisplace;
+
+        const linePos = qLineGeo.attributes.position;
+        linePos.setZ(1, zDisplace);
+        linePos.needsUpdate = true;
+
+        const facePos = qFaceGeo.attributes.position;
+        facePos.setZ(1, zDisplace);
+        facePos.needsUpdate = true;
+      };
     },
   },
   {
     title: {
-      en: "4. The Mesh",
-      de: "4. Das Polygonnetz (Mesh)",
+      en: "4. 2D is also Triangles",
+      de: "4. Auch 2D besteht aus Dreiecken",
     },
     desc: {
-      en: "Multiple faces combined create a Mesh, acting as the 'hollow shell' of a 3D object. The more triangles a mesh has, the smoother and more organic it appears.",
-      de: "Mehrere kombinierte Flächen bilden ein Mesh, das als 'hohle Hülle' eines 3D-Objekts fungiert. Je mehr Dreiecke ein Mesh hat, desto glatter und organischer wirkt es.",
+      en: "How does your computer draw 2D windows or text? Even flat elements like your browser are just rectangles made of two triangles each!",
+      de: "Wie zeichnet der Computer flache 2D-Fenster oder Text? Selbst flache Elemente wie dein Browserfenster sind nur Rechtecke, die jeweils aus zwei Dreiecken zusammengeklebt sind!",
+    },
+    noGlobalSpin: true,
+    createContent(g) {
+      const windowGroup = new THREE.Group();
+
+      const bgGeo = new THREE.PlaneGeometry(1.6, 1.2);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0xcccccc,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+      const bgWireMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      const bgWire = new THREE.Mesh(bgGeo, bgWireMat);
+      bgMesh.add(bgWire);
+      windowGroup.add(bgMesh);
+
+      const titleGeo = new THREE.PlaneGeometry(1.6, 0.25);
+      const titleMat = new THREE.MeshBasicMaterial({
+        color: 0x0055aa,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+      const titleWireMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+      });
+      const titleMesh = new THREE.Mesh(titleGeo, titleMat);
+      titleMesh.position.set(0, 0.475, 0.01);
+      const titleWire = new THREE.Mesh(titleGeo, titleWireMat);
+      titleMesh.add(titleWire);
+      windowGroup.add(titleMesh);
+
+      const btnGeo = new THREE.PlaneGeometry(0.15, 0.15);
+      const btnMat = new THREE.MeshBasicMaterial({
+        color: 0xff3333,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+      const btnWireMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+      });
+      const btnMesh = new THREE.Mesh(btnGeo, btnMat);
+      btnMesh.position.set(0.65, 0.475, 0.02);
+      const btnWire = new THREE.Mesh(btnGeo, btnWireMat);
+      btnMesh.add(btnWire);
+      windowGroup.add(btnMesh);
+
+      g.add(windowGroup);
+
+      g.userData.update = (time) => {
+        windowGroup.rotation.y = Math.sin(time * 0.5) * 0.4;
+        const showWire = Math.sin(time * 2) > 0;
+        bgWire.visible = showWire;
+        titleWire.visible = showWire;
+        btnWire.visible = showWire;
+
+        bgMesh.material.opacity = showWire ? 0.2 : 1.0;
+        titleMesh.material.opacity = showWire ? 0.2 : 1.0;
+        btnMesh.material.opacity = showWire ? 0.2 : 1.0;
+      };
+    },
+  },
+  {
+    title: {
+      en: "5. The Mesh (3D Shapes)",
+      de: "5. Das 3D-Gitter (Mesh)",
+    },
+    desc: {
+      en: "By connecting many triangles in 3D space, we create a hollow shell called a Mesh. Every 3D character or object in a game is just thousands of these flat triangles.",
+      de: "Indem wir viele Dreiecke im 3D-Raum verbinden, erstellen wir eine hohle Hülle, ein sogenanntes Mesh. Jeder 3D-Charakter oder jedes Objekt in Spielen besteht einfach aus Tausenden solcher flachen Dreiecke.",
     },
     createContent(g) {
       const geo = new THREE.IcosahedronGeometry(0.7, 1);
@@ -281,80 +398,12 @@ const STEPS = [
   },
   {
     title: {
-      en: "5. UV Mapping & Textures",
-      de: "5. UV-Mapping & Texturen",
+      en: "6. The Illusion of Depth",
+      de: "6. Die Illusion von Tiefe",
     },
     desc: {
-      en: "To make shapes look real, we wrap 2D images (textures) around them. 'UV Mapping' tells the computer exactly how to unfold the 3D geometry onto a flat 2D image.",
-      de: "Damit Formen real aussehen, wickeln wir 2D-Bilder (Texturen) um sie. 'UV-Mapping' teilt dem Computer genau mit, wie die 3D-Geometrie auf ein flaches 2D-Bild entfaltet wird.",
-    },
-    createContent(g) {
-      const tex = getCheckerboardTexture();
-      const geo = new THREE.BoxGeometry(1, 1, 1);
-      const mat = new THREE.MeshStandardMaterial({ map: tex });
-      const box = new THREE.Mesh(geo, mat);
-      g.add(box);
-
-      const wire = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geo),
-        new THREE.LineBasicMaterial({ color: 0x00ffff }),
-      );
-      g.add(wire);
-
-      g.userData.update = (time, delta) => {
-        box.rotation.y -= delta * 0.5;
-        box.rotation.x -= delta * 0.3;
-        wire.rotation.copy(box.rotation);
-      };
-    },
-  },
-  {
-    title: {
-      en: "6. Shaders & Materials",
-      de: "6. Shader & Materialien",
-    },
-    desc: {
-      en: "Materials use programs called 'Shaders' to calculate how surfaces react to light. Below: Wireframe, Matte (Diffuse), and Glossy (Physically Based Rendering).",
-      de: "Materialien verwenden kleine Programme namens 'Shader', um zu berechnen, wie Oberflächen auf Licht reagieren. Unten: Drahtgitter, Matt (Diffuse) und Glänzend (PBR).",
-    },
-    createContent(g) {
-      const geo = new THREE.SphereGeometry(0.35, 32, 32);
-
-      const m1 = new THREE.MeshBasicMaterial({
-        color: 0x44aaff,
-        wireframe: true,
-      });
-      const s1 = new THREE.Mesh(geo, m1);
-      s1.position.x = -0.9;
-      g.add(s1);
-
-      const m2 = new THREE.MeshStandardMaterial({
-        color: 0x44aaff,
-        roughness: 1,
-        metalness: 0,
-      });
-      const s2 = new THREE.Mesh(geo, m2);
-      s2.position.x = 0;
-      g.add(s2);
-
-      const m3 = new THREE.MeshStandardMaterial({
-        color: 0x44aaff,
-        roughness: 0.1,
-        metalness: 0.9,
-      });
-      const s3 = new THREE.Mesh(geo, m3);
-      s3.position.x = 0.9;
-      g.add(s3);
-    },
-  },
-  {
-    title: {
-      en: "7. Lighting & Shadows",
-      de: "7. Beleuchtung & Schatten",
-    },
-    desc: {
-      en: "Without light, everything is pitch black. Virtual lights cast rays that bounce off materials, generating shadows, highlights, and giving the brain a sense of true depth.",
-      de: "Ohne Licht ist alles pechschwarz. Virtuelle Lichter werfen Strahlen, die von Materialien abprallen, Schatten und Glanzlichter erzeugen und dem Gehirn ein Gefühl von wahrer Tiefe vermitteln.",
+      en: "To make flat triangles look like a real object, we add virtual light. The computer calculates how bright each triangle should be, creating shadows and the illusion of 3D depth.",
+      de: "Damit flache Dreiecke wie ein echtes Objekt aussehen, fügen wir virtuelles Licht hinzu. Der Computer berechnet, wie hell jedes Dreieck sein muss, und erzeugt so Schatten und die Illusion von 3D-Tiefe.",
     },
     createContent(g) {
       const knot = new THREE.Mesh(
@@ -387,13 +436,14 @@ const STEPS = [
   },
   {
     title: {
-      en: "8. The GPU & Rasterization",
-      de: "8. Die GPU & Rasterisierung",
+      en: "7. The Screen (Pixels)",
+      de: "7. Der Bildschirm (Pixels)",
     },
     desc: {
-      en: "Finally, the Graphics Processing Unit (GPU) takes this 3D scene and flattens it. It scans the shapes and determines exactly which discrete 2D screen pixels fall inside the geometry, filling them with color.",
-      de: "Schließlich nimmt die Graphics Processing Unit (GPU) diese 3D-Szene und flacht sie ab. Sie scannt die Formen und bestimmt exakt, welche diskreten 2D-Bildschirmpixel innerhalb der Geometrie liegen, und füllt sie mit Farbe.",
+      en: "In the end, your monitor only shows tiny square pixels. The computer checks which pixel is inside which triangle and colors it. This happens millions of times per second!",
+      de: "Am Ende zeigt dein Monitor nur winzige quadratische Pixel an. Der Computer prüft, welches Pixel in welchem Dreieck liegt, und färbt es ein. Das passiert Millionen Mal pro Sekunde!",
     },
+    noGlobalSpin: true,
     createContent(g) {
       const a = new THREE.Vector3(0, 0.7, 0);
       const b = new THREE.Vector3(-0.7, -0.6, 0);
@@ -497,13 +547,308 @@ const STEPS = [
       };
     },
   },
+  {
+    title: {
+      en: "8. The Result",
+      de: "8. Das Ergebnis",
+    },
+    desc: {
+      en: "",
+      de: "",
+    },
+    noGlobalSpin: true,
+    createContent(g) {
+      function subdivideFaces(baseGeo) {
+        const srcPos = baseGeo.attributes.position;
+        const srcIdx = baseGeo.index;
+        const faceCount = srcIdx ? srcIdx.count : srcPos.count;
+
+        const positions = [];
+        const indices = [];
+
+        for (let f = 0; f < faceCount; f += 3) {
+          const ai = srcIdx ? srcIdx.getX(f) : f;
+          const bi = srcIdx ? srcIdx.getX(f + 1) : f + 1;
+          const ci = srcIdx ? srcIdx.getX(f + 2) : f + 2;
+
+          const ax = srcPos.getX(ai),
+            ay = srcPos.getY(ai),
+            az = srcPos.getZ(ai);
+          const bx = srcPos.getX(bi),
+            by = srcPos.getY(bi),
+            bz = srcPos.getZ(bi);
+          const cx = srcPos.getX(ci),
+            cy = srcPos.getY(ci),
+            cz = srcPos.getZ(ci);
+
+          const dx = (ax + bx + cx) / 3;
+          const dy = (ay + by + cy) / 3;
+          const dz = (az + bz + cz) / 3;
+
+          const n = positions.length / 3;
+          positions.push(ax, ay, az);
+          positions.push(bx, by, bz);
+          positions.push(cx, cy, cz);
+          positions.push(dx, dy, dz);
+
+          indices.push(n + 3, n + 1, n + 2);
+          indices.push(n + 0, n + 3, n + 2);
+          indices.push(n + 0, n + 1, n + 3);
+        }
+
+        const geo = new THREE.BufferGeometry();
+        const posArr = new Float32Array(positions);
+        geo.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
+        geo.setIndex(indices);
+        geo.computeVertexNormals();
+        return geo;
+      }
+
+      const RADIUS = 0.8;
+      const geoLow = new THREE.IcosahedronGeometry(RADIUS, 1);
+
+      const geoHighBase = new THREE.IcosahedronGeometry(RADIUS, 4);
+      const geoHigh = subdivideFaces(geoHighBase);
+      geoHighBase.dispose();
+
+      const posAttr = geoHigh.attributes.position;
+
+      const smoothPositions = posAttr.array.slice();
+
+      const vertexCount = posAttr.count;
+      const directions = new Float32Array(smoothPositions.length);
+      const tempVec = new THREE.Vector3();
+      for (let i = 0; i < vertexCount; i++) {
+        const base = i * 3;
+        tempVec.set(
+          smoothPositions[base],
+          smoothPositions[base + 1],
+          smoothPositions[base + 2],
+        );
+        const len = tempVec.length() || 1;
+        directions[base] = tempVec.x / len;
+        directions[base + 1] = tempVec.y / len;
+        directions[base + 2] = tempVec.z / len;
+      }
+
+      const isSpikeTip = new Uint8Array(vertexCount);
+      for (let i = 3; i < vertexCount; i += 4) isSpikeTip[i] = 1;
+
+      const matWireLow = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        depthWrite: false,
+      });
+      const matWireHigh = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        depthWrite: false,
+      });
+      const matFlatWhite = new THREE.MeshBasicMaterial({
+        color: 0xaaaaaa,
+        transparent: true,
+      });
+      const matLit = new THREE.MeshPhongMaterial({
+        color: 0x4b2ecf,
+        specular: 0xffffff,
+        shininess: 1,
+        transparent: true,
+      });
+
+      const meshWireLow = new THREE.Mesh(geoLow, matWireLow);
+
+      const meshWireHigh = new THREE.Mesh(geoHigh, matWireHigh);
+      const meshFlatWhite = new THREE.Mesh(geoHigh, matFlatWhite);
+      const meshLit = new THREE.Mesh(geoHigh, matLit);
+
+      meshWireLow.scale.setScalar(1.002);
+      meshWireHigh.scale.setScalar(1.002);
+
+      const group = new THREE.Group();
+      group.add(meshWireLow, meshWireHigh, meshFlatWhite, meshLit);
+      g.add(group);
+
+      group.position.z = -1.6;
+
+      const hemiLight = new THREE.DirectionalLight(0x4b2ecf, 1);
+      hemiLight.position.set(0, -20, -10);
+      g.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0x00ffb3, 1);
+      dirLight.position.set(0, 20, 10);
+      g.add(dirLight);
+
+      function setMeshOpacity(mesh, opacity) {
+        mesh.material.opacity = opacity;
+        mesh.visible = opacity > 0.001;
+      }
+
+      const spikeConf = {
+        speed: 800,
+        min: 0.1,
+        max: 0.22,
+      };
+
+      function updateGeometry(timeStamp, spikeAmount) {
+        const { speed, min, max } = spikeConf;
+        const arr = posAttr.array;
+
+        for (let i = 0; i < vertexCount; i++) {
+          const base = i * 3;
+          const sx = smoothPositions[base];
+          const sy = smoothPositions[base + 1];
+          const sz = smoothPositions[base + 2];
+
+          if (isSpikeTip[i] && spikeAmount > 0) {
+            const wave = min + Math.abs(Math.sin(i + timeStamp / speed)) * max;
+            const dirX = directions[base];
+            const dirY = directions[base + 1];
+            const dirZ = directions[base + 2];
+
+            const tx = dirX * (RADIUS + wave);
+            const ty = dirY * (RADIUS + wave);
+            const tz = dirZ * (RADIUS + wave);
+
+            arr[base] = sx + (tx - sx) * spikeAmount;
+            arr[base + 1] = sy + (ty - sy) * spikeAmount;
+            arr[base + 2] = sz + (tz - sz) * spikeAmount;
+          } else {
+            arr[base] = sx;
+            arr[base + 1] = sy;
+            arr[base + 2] = sz;
+          }
+        }
+
+        posAttr.needsUpdate = true;
+        geoHigh.computeVertexNormals();
+      }
+
+      const easeInOut = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+      const fadeOut = (t) => 1 - Math.pow(clamp(t, 0, 1), 3);
+      const fadeIn = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+
+      const DUR = {
+        lowWireHold: 3,
+        lowToHigh: 3,
+        growSpikes: 3,
+        wireToFlat: 3,
+        flatToLit: 3,
+        litHold: 10,
+        litToLowWire: 2,
+      };
+
+      const CYCLE =
+        DUR.lowWireHold +
+        DUR.lowToHigh +
+        DUR.growSpikes +
+        DUR.wireToFlat +
+        DUR.flatToLit +
+        DUR.litHold +
+        DUR.litToLowWire;
+
+      g.userData.update = (time, delta) => {
+        group.rotation.y += 0.06 * delta;
+        group.rotation.x += 0.18 * delta;
+        group.rotation.z += 0.12 * delta;
+
+        const elapsed = time % CYCLE;
+
+        function setAll(opacities) {
+          setMeshOpacity(meshWireLow, opacities.wireLow ?? 0);
+          setMeshOpacity(meshWireHigh, opacities.wireHigh ?? 0);
+          setMeshOpacity(meshFlatWhite, opacities.flatWhite ?? 0);
+          setMeshOpacity(meshLit, opacities.lit ?? 0);
+        }
+
+        let t0 = 0;
+        let segEnd = t0 + DUR.lowWireHold;
+        let spikeAmount = 0;
+
+        if (elapsed < segEnd) {
+          setAll({ wireLow: 1 });
+          dirLight.intensity = 0;
+          hemiLight.intensity = 0;
+          updateGeometry(time * 1000, 0);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.lowToHigh;
+
+        if (elapsed < segEnd) {
+          const t = clamp((elapsed - t0) / DUR.lowToHigh, 0, 1);
+          setAll({ wireLow: fadeOut(t), wireHigh: fadeIn(t) });
+          dirLight.intensity = 0;
+          hemiLight.intensity = 0;
+          updateGeometry(time * 1000, 0);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.growSpikes;
+
+        if (elapsed < segEnd) {
+          const t = clamp((elapsed - t0) / DUR.growSpikes, 0, 1);
+          spikeAmount = easeInOut(t);
+          setAll({ wireHigh: 1 });
+          dirLight.intensity = 0;
+          hemiLight.intensity = 0;
+          updateGeometry(time * 1000, spikeAmount);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.wireToFlat;
+
+        if (elapsed < segEnd) {
+          const t = clamp((elapsed - t0) / DUR.wireToFlat, 0, 1);
+          setAll({ wireHigh: fadeOut(t), flatWhite: fadeIn(t) });
+          dirLight.intensity = 0;
+          hemiLight.intensity = 0;
+          updateGeometry(time * 1000, 1);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.flatToLit;
+
+        if (elapsed < segEnd) {
+          const t = clamp((elapsed - t0) / DUR.flatToLit, 0, 1);
+          setAll({ flatWhite: fadeOut(t), lit: fadeIn(t) });
+          dirLight.intensity = easeInOut(t) * 1;
+          hemiLight.intensity = easeInOut(t) * 1;
+          updateGeometry(time * 1000, 1);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.litHold;
+
+        if (elapsed < segEnd) {
+          setAll({ lit: 1 });
+          dirLight.intensity = 1;
+          hemiLight.intensity = 1;
+          updateGeometry(time * 1000, 1);
+          return;
+        }
+        t0 = segEnd;
+        segEnd = t0 + DUR.litToLowWire;
+
+        const t = clamp((elapsed - t0) / DUR.litToLowWire, 0, 1);
+        spikeAmount = 1 - easeInOut(t);
+        setAll({ wireLow: fadeIn(t), lit: fadeOut(t) });
+        dirLight.intensity = 1 - easeInOut(t);
+        hemiLight.intensity = 1 - easeInOut(t);
+        updateGeometry(time * 1000, spikeAmount);
+      };
+    },
+  },
 ];
 
 export default function ThreeScene() {
   const containerRef = useRef(null);
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [lang, setLang] = useState("en");
+  const [lang, setLang] = useState("de");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [radius, setRadius] = useState(20);
   const [cameraY, setCameraY] = useState(0.4);
@@ -621,7 +966,12 @@ export default function ThreeScene() {
           0,
           radiusRef.current * Math.cos(i * STEP),
         );
-        g.rotation.y = animTime * 0.2;
+
+        if (STEPS[i].noGlobalSpin) {
+          g.rotation.y = i * STEP;
+        } else {
+          g.rotation.y = animTime * 0.2;
+        }
 
         if (g.userData.update) {
           g.userData.update(animTime, delta);
@@ -754,8 +1104,8 @@ export default function ThreeScene() {
                   cursor: "pointer",
                 }}
               >
-                <option value="en">English</option>
                 <option value="de">Deutsch</option>
+                <option value="en">English</option>
               </select>
             </div>
 
@@ -804,7 +1154,7 @@ export default function ThreeScene() {
               <input
                 type="range"
                 min="0"
-                max="1.5"
+                max="3.5"
                 step="0.1"
                 value={animSpeed}
                 onChange={(e) => setAnimSpeed(Number(e.target.value))}
@@ -889,29 +1239,6 @@ export default function ThreeScene() {
           {STEPS[currentStep].desc[lang]}
         </p>
       </div>
-
-      {/* <div
-        style={{
-          position: "absolute",
-          top: "40px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          color: "rgba(255,255,255,0.4)",
-          fontSize: "14px",
-          textTransform: "uppercase",
-          letterSpacing: "3px",
-          fontFamily: "system-ui, sans-serif",
-          pointerEvents: "none",
-          zIndex: 10,
-          background: "rgba(0,0,0,0.3)",
-          padding: "8px 16px",
-          borderRadius: "20px",
-        }}
-      >
-        {lang === "en"
-          ? "Click Left / Right to navigate"
-          : "Klicken Sie links / rechts zum Navigieren"}
-      </div>*/}
     </div>
   );
 }
