@@ -982,11 +982,18 @@ export default function ThreeScene() {
   const [radius, setRadius] = useState(20);
   const [cameraY, setCameraY] = useState(0.4);
   const [animSpeed, setAnimSpeed] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const animSpeedRef = useRef(animSpeed);
 
   useEffect(() => {
     animSpeedRef.current = animSpeed;
   }, [animSpeed]);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   const absStepRef = useRef(0);
   const targetAngleRef = useRef(0);
@@ -1317,6 +1324,29 @@ export default function ThreeScene() {
                 style={{ cursor: "pointer" }}
               />
             </div>
+
+            <button
+              onClick={() => {
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                } else {
+                  document.documentElement.requestFullscreen();
+                }
+              }}
+              style={{
+                background: "rgba(0,0,0,0.5)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.3)",
+                padding: "10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "14px",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+              }}
+            >
+              {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </button>
           </div>
         )}
       </div>
