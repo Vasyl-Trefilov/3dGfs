@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-const STEP = Math.PI / 4;
+const STEP = (Math.PI * 2) / 11;
 const LERP_SPEED = 0.08;
 
 function makeAxis(start, end, color) {
@@ -43,12 +43,12 @@ function makeTextSprite(text, color, scaleY = 0.3) {
 const STEPS = [
   {
     title: {
-      en: "1. The Point",
-      de: "1. Der Punkt(Vertex)",
+      en: "1. The Point (Vertex)",
+      de: "1. Der Punkt (Vertex)",
     },
     desc: {
-      en: "A point is the absolute most basic element in graphics. It represents a single exact location in space, defined purely by its X, Y, and Z coordinates.",
-      de: "Ein Punkt ist das absolut grundlegendste Element in der Computergrafik. Er repräsentiert einen exakten Ort im Raum, der rein durch seine X-, Y- und Z-Koordinaten definiert ist.",
+      en: "A computer doesn't know what a human or a car is. Everything starts with the most basic element: a point in an empty 3D space, defined purely by its X, Y, and Z coordinates.",
+      de: "Ein Computer weiß nicht, was ein Mensch oder ein Auto ist. Alles beginnt mit dem absolut grundlegendsten Element: einem Punkt im leeren 3D-Raum, definiert durch X-, Y- und Z-Koordinaten.",
     },
     createContent(g) {
       const dot1 = new THREE.Mesh(
@@ -120,11 +120,11 @@ const STEPS = [
   {
     title: {
       en: "2. The Edge",
-      de: "2. Die Kante(Edge)",
+      de: "2. Die Kante (Edge)",
     },
     desc: {
-      en: "When two points are connected, they form an Edge. This straight line segment is the simplest shape the computer can draw.",
-      de: "Wenn zwei Punkte verbunden werden, bilden sie eine Kante. Dieses gerade Liniensegment ist die einfachste Form, die der Computer zeichnen kann.",
+      en: "When we tell the computer to connect two points, they form an Edge. This straight line segment is the simplest shape the graphics card can draw.",
+      de: "Wenn wir dem Computer sagen, er soll zwei Punkte verbinden, bilden sie eine Kante. Dieses gerade Liniensegment ist die einfachste Form, die die Grafikkarte (GPU) zeichnen kann.",
     },
     createContent(g) {
       const p1 = new THREE.Vector3(-0.8, 0.5, 0);
@@ -164,11 +164,11 @@ const STEPS = [
   {
     title: {
       en: "3. The Face (Triangle)",
-      de: "3. Das Dreieck (Face)",
+      de: "3. Das Dreieck (Face / Polygon)",
     },
     desc: {
-      en: "Three connected points form a Triangle. The computer loves triangles because they are always perfectly flat, unlike a Quad (rectangle) which bends and breaks when a point moves.",
-      de: "Drei verbundene Punkte bilden ein Dreieck. Der Computer liebt Dreiecke, weil sie immer perfekt flach sind. Ein Viereck (Rechts) hingegen knickt in sich zusammen, sobald sich ein Punkt verschiebt.",
+      en: "Three connected points form a solid Triangle. Why triangles? Because a triangle is mathematically always perfectly flat. A quad (square) can bend and break if you move one point.",
+      de: "Drei Punkte bilden ein massives Dreieck. Warum immer Dreiecke? Weil ein Dreieck mathematisch gesehen immer absolut flach ist. Ein Viereck hingegen würde in sich zusammenknicken, wenn man nur einen Punkt bewegt.",
     },
     createContent(g) {
       const tPts = [
@@ -239,20 +239,6 @@ const STEPS = [
       );
       g.add(qLine);
 
-      // const qDiagGeo = new THREE.BufferGeometry().setFromPoints([
-      //   qPts[0],
-      //   qPts[2],
-      // ]);
-      // const qDiag = new THREE.Line(
-      //   qDiagGeo,
-      //   new THREE.LineBasicMaterial({
-      //     color: 0xff4444,
-      //     transparent: true,
-      //     opacity: 0.3,
-      //   }),
-      // );
-      // g.add(qDiag);
-
       const qFaceGeo = new THREE.BufferGeometry().setFromPoints(qPts);
       qFaceGeo.setIndex([0, 3, 2, 0, 2, 1]);
       qFaceGeo.computeVertexNormals();
@@ -284,12 +270,110 @@ const STEPS = [
   },
   {
     title: {
-      en: "4. 2D is also Triangles",
-      de: "4. Auch 2D besteht aus Dreiecken",
+      en: "4. Color & Blending",
+      de: "4. Farbe & Mischen",
     },
     desc: {
-      en: "How does your computer draw 2D windows or text? Even flat elements like your browser are just rectangles made of two triangles each!",
-      de: "Wie zeichnet der Computer flache 2D-Fenster oder Text? Selbst flache Elemente wie dein Browserfenster sind nur Rechtecke, die jeweils aus zwei Dreiecken zusammengeklebt sind!",
+      en: "How does the computer know what color to draw? We can give each point a specific color (like Red, Green, Blue). The graphics card then automatically and smoothly blends these colors together across the surface.",
+      de: "Woher weiß der Computer, welche Farbe das Dreieck haben soll? Wir können jedem Eckpunkt eine eigene Farbe geben. Die Grafikkarte mischt (blendet) diese Farben dann völlig automatisch und stufenlos auf der ganzen Fläche.",
+    },
+    createContent(g) {
+      const geometry = new THREE.BufferGeometry();
+
+      const vertices = new Float32Array([
+        -0.8, -0.6, 0.0, 0.8, -0.6, 0.0, 0.0, 0.8, 0.0,
+      ]);
+
+      const colors = new Float32Array([
+        1.0,
+        0.0,
+        0.0, // Red
+        0.0,
+        1.0,
+        0.0, // Green
+        0.0,
+        0.5,
+        1.0, // Blue
+      ]);
+
+      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      g.add(mesh);
+
+      const wireframe = new THREE.LineSegments(
+        new THREE.WireframeGeometry(geometry),
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 }),
+      );
+      mesh.add(wireframe);
+
+      g.userData.update = (time) => {
+        mesh.rotation.y = Math.sin(time) * 0.5;
+        mesh.rotation.x = Math.cos(time) * 0.2;
+      };
+    },
+  },
+  {
+    title: {
+      en: "5. Textures (Stickers)",
+      de: "5. Texturen (Aufkleber)",
+    },
+    desc: {
+      en: "Drawing complex things like a human face or wood using only colored points would require millions of tiny triangles. Instead, the computer stretches a 2D image over the triangle, just like putting a sticker on it.",
+      de: "Komplexe Dinge wie ein Gesicht oder Holz nur mit farbigen Punkten zu zeichnen, würde Millionen winzige Dreiecke erfordern. Stattdessen spannt der Computer ein flaches 2D-Bild über das Dreieck – wie einen Aufkleber.",
+    },
+    createContent(g) {
+      // Create a canvas texture (so we don't need external image files)
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+
+      // Draw background
+      ctx.fillStyle = "#ffcc00";
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Draw a border
+      ctx.lineWidth = 20;
+      ctx.strokeStyle = "#e6b800";
+      ctx.strokeRect(10, 10, 492, 492);
+
+      // Draw Smiley/Emoji using text
+      ctx.font = "250px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("😎", 256, 276);
+
+      const texture = new THREE.CanvasTexture(canvas);
+
+      const geometry = new THREE.PlaneGeometry(1.6, 1.6);
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+
+      const plane = new THREE.Mesh(geometry, material);
+      g.add(plane);
+
+      g.userData.update = (time) => {
+        plane.rotation.y = time * 0.8;
+      };
+    },
+  },
+  {
+    title: {
+      en: "6. 2D is also Triangles",
+      de: "6. Auch 2D besteht aus Dreiecken",
+    },
+    desc: {
+      en: "So how does your computer draw 2D windows, text, or a web browser? Even flat elements are just rectangles made by gluing two triangles together. Everything on your screen is 3D hardware pretending to be 2D.",
+      de: "Wie zeichnet der PC dann 2D-Fenster, Text oder deinen Webbrowser? Selbst flache Elemente sind nur Rechtecke, die aus jeweils zwei Dreiecken zusammengeklebt sind. Dein ganzes Betriebssystem wird von der 3D-Grafikkarte berechnet.",
     },
     noGlobalSpin: true,
     createContent(g) {
@@ -359,15 +443,15 @@ const STEPS = [
   },
   {
     title: {
-      en: "5. The Mesh (3D Shapes)",
-      de: "5. Das 3D-Gitter (Mesh)",
+      en: "7. The Mesh (3D Shapes)",
+      de: "7. Das 3D-Gitter (Mesh)",
     },
     desc: {
-      en: "By connecting many triangles in 3D space, we create a hollow shell called a Mesh. Every 3D character or object in a game is just thousands of these flat triangles.",
-      de: "Indem wir viele Dreiecke im 3D-Raum verbinden, erstellen wir eine hohle Hülle, ein sogenanntes Mesh. Jeder 3D-Charakter oder jedes Objekt in Spielen besteht einfach aus Tausenden solcher flachen Dreiecke.",
+      en: "By connecting many small triangles in 3D space, we create a hollow shell called a 'Mesh'. Every single 3D character, car, or object in a game is built out of thousands of these flat triangles.",
+      de: "Indem wir viele kleine Dreiecke im Raum verbinden, erstellen wir eine hohle Hülle, ein sogenanntes 'Mesh'. Jeder 3D-Charakter, jedes Auto oder Objekt in Spielen besteht einfach aus Tausenden solcher flachen Dreiecke.",
     },
     createContent(g) {
-      const geo = new THREE.IcosahedronGeometry(0.7, 1);
+      const geo = new THREE.IcosahedronGeometry(0.8, 1);
 
       const wire = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo),
@@ -398,20 +482,65 @@ const STEPS = [
   },
   {
     title: {
-      en: "6. The Illusion of Depth",
-      de: "6. Die Illusion von Tiefe",
+      en: "8. Depth & Overlap (Z-Buffer)",
+      de: "8. Tiefe & Überlappung (Z-Buffer)",
     },
     desc: {
-      en: "To make flat triangles look like a real object, we add virtual light. The computer calculates how bright each triangle should be, creating shadows and the illusion of 3D depth.",
-      de: "Damit flache Dreiecke wie ein echtes Objekt aussehen, fügen wir virtuelles Licht hinzu. Der Computer berechnet, wie hell jedes Dreieck sein muss, und erzeugt so Schatten und die Illusion von 3D-Tiefe.",
+      en: "When objects overlap, how does the computer know which one to draw in front? It uses a 'Z-Buffer', a special memory that checks the depth of every pixel. If something is hidden behind a wall, the GPU stops drawing it immediately.",
+      de: "Wenn sich Dinge überschneiden, woher weiß der PC, was vorne ist? Er nutzt den 'Z-Buffer' (Tiefenspeicher). Für jeden Pixel merkt er sich die Entfernung zur Kamera. Wird etwas von einer Wand verdeckt, hört die Grafikkarte sofort auf, es zu zeichnen.",
+    },
+    noGlobalSpin: true,
+    createContent(g) {
+      const geo = new THREE.PlaneGeometry(1.6, 1.6);
+
+      const matRed = new THREE.MeshBasicMaterial({
+        color: 0xff3344,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const matBlue = new THREE.MeshBasicMaterial({
+        color: 0x33aaff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.85,
+      });
+
+      const planeRed = new THREE.Mesh(geo, matRed);
+      const planeBlue = new THREE.Mesh(geo, matBlue);
+
+      // Rotate blue plane to intersect with red plane
+      planeBlue.rotation.x = Math.PI / 2;
+
+      g.add(planeRed);
+      g.add(planeBlue);
+
+      g.userData.update = (time) => {
+        // Slowly move the red plane up and down through the blue plane
+        planeRed.position.y = Math.sin(time * 1.5) * 0.6;
+
+        // Rotate the entire group slightly to show the intersection effect clearly
+        g.rotation.y = Math.sin(time * 0.5) * 0.5;
+        g.rotation.x = 0.3;
+      };
+    },
+  },
+  {
+    title: {
+      en: "9. Virtual Lighting",
+      de: "9. Virtuelles Licht",
+    },
+    desc: {
+      en: "To make flat triangles look like a real, solid object, we add virtual light. The computer calculates the angle of each triangle toward the light source to create realistic shadows, highlights, and the perfect illusion of 3D depth.",
+      de: "Damit flache Dreiecke wie ein echtes Objekt aussehen, simulieren wir Licht. Der Computer berechnet den Winkel jedes Dreiecks zur Lichtquelle. So entstehen Schatten, Glanzpunkte und die perfekte Illusion von 3D-Tiefe.",
     },
     createContent(g) {
       const knot = new THREE.Mesh(
-        new THREE.TorusKnotGeometry(0.4, 0.15, 100, 16),
+        new THREE.TorusKnotGeometry(0.45, 0.15, 128, 32),
         new THREE.MeshStandardMaterial({
           color: 0xff2244,
-          roughness: 0.3,
-          metalness: 0.2,
+          roughness: 0.2,
+          metalness: 0.4,
         }),
       );
       g.add(knot);
@@ -436,12 +565,12 @@ const STEPS = [
   },
   {
     title: {
-      en: "7. The Screen (Pixels)",
-      de: "7. Der Bildschirm (Pixels)",
+      en: "10. The Screen (Rasterization)",
+      de: "10. Der Bildschirm (Rasterisierung)",
     },
     desc: {
-      en: "In the end, your monitor only shows tiny square pixels. The computer checks which pixel is inside which triangle and colors it. This happens millions of times per second!",
-      de: "Am Ende zeigt dein Monitor nur winzige quadratische Pixel an. Der Computer prüft, welches Pixel in welchem Dreieck liegt, und färbt es ein. Das passiert Millionen Mal pro Sekunde!",
+      en: "In the very last step, the math must be converted for your monitor, which only shows a grid of tiny square pixels. The computer tests millions of times per second: 'Is this pixel inside the triangle?' If yes, it colors it.",
+      de: "Ganz am Ende muss die Mathematik auf deinen Monitor übertragen werden. Dieser besteht nur aus winzigen, quadratischen Pixeln. Der Computer testet Millionen Mal pro Sekunde: 'Liegt dieser Pixel innerhalb des Dreiecks?' Wenn ja, wird er eingefärbt.",
     },
     noGlobalSpin: true,
     createContent(g) {
@@ -549,12 +678,12 @@ const STEPS = [
   },
   {
     title: {
-      en: "8. The Result",
-      de: "8. Das Ergebnis",
+      en: "11. The Result",
+      de: "11. Das Ergebnis",
     },
     desc: {
-      en: "",
-      de: "",
+      en: "All these steps happen inside your computer 60+ times per second. Math points become triangles, triangles get color and light, the depth is checked, and finally, it's drawn onto the pixels of your screen.",
+      de: "All diese Schritte passieren in deinem Computer 60+ Mal pro Sekunde. Mathematische Punkte werden zu Dreiecken, diese bekommen Farbe und Licht, die Tiefe wird berechnet, und schließlich leuchten die Pixel deines Bildschirms.",
     },
     noGlobalSpin: true,
     createContent(g) {
